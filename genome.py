@@ -43,7 +43,7 @@ class Genome(object):
 
 class Chromosome(object):
     """
-    Class to store the 4 masks that will repreesent the available chromosome
+    Class to store the 3 masks that will repreesent the available chromosome
     """
     def __init__(self, seq_mask, assembly, chr_id):
         self.assembly = assembly
