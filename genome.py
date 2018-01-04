@@ -1,8 +1,8 @@
 """
-This module contains the main class for parsing the genome. This is a class
-that stores the 4 masks needed for the randomization process.
+This module contains the main class for parsing the genome
+This is a class that stores the 4 masks needed for the randomization process
 
-At some point I can include some kind of automatic download from UCSC.
+At some point I can include some kind of automatic download from UCSC
 """
 
 import randommut.refseq as rs
