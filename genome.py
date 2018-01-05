@@ -49,3 +49,12 @@ class Chromosome(object):
         self.assembly = assembly
         self.seq_mask = seq_mask
         self.chr_id = chr_id
+    def n_mask(self):
+        " returns the N mask, True is no N, False is N"
+        return self.seq_mask[0]
+    def purine_mask(self):
+        " returns the purine mask, True is A G, False is C T"
+        return self.seq_mask[1]
+    def strong_masl(self):
+        " returns the strong mask, True is C G, False is A T"
+        return self.seq_mask[2]
