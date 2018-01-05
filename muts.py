@@ -45,36 +45,6 @@ class Mut(object):
             self.alt = Seq(alt)
 
 
-    
-    def get_tr96(self, masks):
-        " get the mutation subtype in MS96 format"
-        ctx = self.get_context(masks)
-        return "{}>{}".format(ctx, self.alt)
-    def get_context(self, masks, k=1):
-        """
-        Return the context for a position in the mask. Needs the 3 masks
-        in the correct order (nmask purine and strong). The k indicates
-        how many positions we should move to the upstream and downstream.
-        1 per default means the 96 context. It uses by default baseset
-        C A, meaning that mutations that have a reference value diferent
-        than C or A will be transformed to the other strand by reverese
-        complementary
-        """
-        if self.pos_start == self.pos_end:
-            pos = self.pos_start
-            left_end = pos-k
-            rigth_end = pos+k+1
-            mask_cont = tuple(i[left_end:rigth_end] for i in masks)
-            context = Seq("".join(rs.maskstoseq(mask_cont)))
-
-            if context[k] not in set(["C", "A"]):
-                context = context.reverse_complement()
-
-            context = mask_cont
-            return context
-        else:
-            raise ValueError
-
     def randomize_mutation_same_context(self, masks, wlength, times, k):
         """
         Function to randomize a mutation n times within the available part
@@ -237,6 +207,7 @@ class MutSet(object):
     def get_tr(self):
         " get the transision in MS6 format"
         def make_tr(arr):
+            " small function to generate the tr"
             # this uses the A C format (useful to make generalization here)
             if arr[0] in ["T", "G"]:
                 arr[0] = Seq(arr[0]).reverse_complement()
@@ -244,8 +215,50 @@ class MutSet(object):
             return "{}>{}".format(arr[0], arr[1])
         res = np.apply_along_axis( make_tr, axis=1, arr=self.meta[:, [1, 2]] )
         return res
-
+    def get_context(self, chromosome_object, k=1):
+        """
+        Return the context for a position in the mask. Needs the 3 masks
+        in the correct order (nmask purine and strong). The k indicates
+        how many positions we should move to the upstream and downstream.
+        1 per default means the 96 context. It uses by default baseset
+        C A, meaning that mutations that have a reference value diferent
+        than C or A will be transformed to the other strand by reverese
+        complementary
+        """
+        # Important pos_start != pos_end
+        left_end = self.pos[:, 0] - k # this is the start
+        rigth_end = self.pos[:, 1] + k  # this is the end
         
+        
+
+        masks = chromosome_object.seq_mask
+        ctx = []
+
+        for i in range(len(left_end)):
+            mask_ctx = tuple(j[left_end[i]:rigth_end[i]] for j in masks)
+            context = "".join(rs.maskstoseq(mask_ctx))
+
+            ctx.append(context)
+
+        return ctx
+    def get_tr96(self, chromosome_object,k=1):
+        " get the mutation subtype in MS96 format"
+        ctx = self.get_context(chromosome_object, k=k)
+        alt = self.get_alt()
+        mut_list = []
+
+        for i, val in enumerate(ctx):
+            if val[k] in ["T", "G"]:
+                ctx_tr = str(Seq(val).reverse_complement())
+                alt_tr = str(Seq(alt[i]).reverse_complement())
+            else:
+                ctx_tr = val
+                alt_tr = alt[i]
+            
+            mut = "{}>{}".format(ctx_tr, alt_tr)
+
+            mut_list.append(mut)
+        return mut_list
 
     def randomize_mutset_pair(self, times, wlength, genome_object):
         """
@@ -321,6 +334,32 @@ def mask_to_pvector(mask):
 
     return pvector
 
+
+def randomize_mask_row(mask, times):
+    """
+    Here we are tranforming a definitive mask into a pvector and then
+    chosing randomly the idx that will be selected. These are equivalent
+    to the relatives positions in the sequence.
+    """
+    # why replace = True? The idea is that different randomizations are pure
+    # independent experiments, then, this should be rep true.
+    pvector = mask_to_pvector(mask)
+    int_size = len(pvector) # this should be equibalent to the wl*2
+    rand_idx = np.random.choice(int_size, p=pvector, size=times, replace=True)
+
+    return rand_idx
+
+def randomize_mask_matrix(mask_matrix, times):
+    """
+    It applies the function randomize_mask_row row by row in a
+    definitive Mutset Mask
+    """
+    idx_matrix = np.apply_along_axis(randomize_mask_row,
+                                     axis=1, # this is rows
+                                     arr=mask_matrix,
+                                     times=times) # using the kargs argument
+
+    return idx_matrix
 
 def compute_bimask(masks, biset):
     """
