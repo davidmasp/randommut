@@ -213,7 +213,7 @@ class MutSet(object):
                 arr[0] = Seq(arr[0]).reverse_complement()
                 arr[1] = Seq(arr[1]).reverse_complement()
             return "{}>{}".format(arr[0], arr[1])
-        res = np.apply_along_axis( make_tr, axis=1, arr=self.meta[:, [1, 2]] )
+        res = np.apply_along_axis(make_tr, axis=1, arr=self.meta[:, [1, 2]])
         return res
     def get_context(self, chromosome_object, k=1):
         """
@@ -228,8 +228,6 @@ class MutSet(object):
         # Important pos_start != pos_end
         left_end = self.pos[:, 0] - k # this is the start
         rigth_end = self.pos[:, 1] + k  # this is the end
-        
-        
 
         masks = chromosome_object.seq_mask
         ctx = []
@@ -241,7 +239,7 @@ class MutSet(object):
             ctx.append(context)
 
         return ctx
-    def get_tr96(self, chromosome_object,k=1):
+    def get_tr96(self, chromosome_object, k=1):
         " get the mutation subtype in MS96 format"
         ctx = self.get_context(chromosome_object, k=k)
         alt = self.get_alt()
@@ -254,7 +252,7 @@ class MutSet(object):
             else:
                 ctx_tr = val
                 alt_tr = alt[i]
-            
+
             mut = "{}>{}".format(ctx_tr, alt_tr)
 
             mut_list.append(mut)
@@ -302,8 +300,29 @@ class MutSet(object):
         to change
         """
         pass
+    
+    def generate_mask_matrix(self, chromosome_object, wl):
+        """
+        It generates mask matrix
+        """
+        wl = wl + 1 # I think (due to the 0 based stuff)
+        mask_matrix = (np.empty([len(self.pos), wl], dtype=bool),
+                       np.empty([len(self.pos), wl], dtype=bool),
+                       np.empty([len(self.pos), wl], dtype=bool))
+        
+        for i in mask_matrix:
+            i.fill(0) # this is very critical I checked should work
+        
+        masks = chromosome_object.seq_mask
 
+        for j in masks:
+            for i, val in enumerate(pos)): #  this should enumerate rows
+                left_end = val[0] - wl # this is the start and then i substract
+                right_end = val[1] + wl # this is the end and then i add
+                
+                mask_matrix[j][i,] = masks[j][left_end:right_end]
 
+        return mask_matrix
 
 
 
