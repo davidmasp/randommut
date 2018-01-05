@@ -13,7 +13,7 @@ def genome_from_path(refseq_path, assembly):
     refseq_object = rs.RefSeq(refseq_path, assembly)
     refseq_mask = refseq_object.dress_up_seq()
 
-    chr_list = []
+    chr_list = [] # make this a dictionary?
     for i in refseq_object.get_chr_names():
         chr_tmp = Chromosome(seq_mask=refseq_mask[i], assembly=assembly, chr_id=i)
         chr_list.append(chr_tmp)
@@ -24,7 +24,7 @@ class Genome(object):
     Class to store the 4 masks that will repreesent the available chromosome
     """
     def __init__(self, chr_list, assembly):
-        self.chr_list = chr_list
+        self.chr_list = chr_list 
         self.assembly = assembly
 
     def __len__(self):
@@ -55,6 +55,6 @@ class Chromosome(object):
     def purine_mask(self):
         " returns the purine mask, True is A G, False is C T"
         return self.seq_mask[1]
-    def strong_masl(self):
+    def strong_mask(self):
         " returns the strong mask, True is C G, False is A T"
         return self.seq_mask[2]

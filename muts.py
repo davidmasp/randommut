@@ -316,7 +316,7 @@ class MutSet(object):
         masks = chromosome_object.seq_mask
 
         for j in masks:
-            for i, val in enumerate(pos)): #  this should enumerate rows
+            for i, val in enumerate(pos): #  this should enumerate rows
                 left_end = val[0] - wl # this is the start and then i substract
                 right_end = val[1] + wl # this is the end and then i add
                 
