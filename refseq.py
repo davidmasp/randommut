@@ -1,29 +1,10 @@
 """
 Functions to store and serialize refseqs
 """
-
+import re
 import numpy as np
-import tqdm
 from Bio import SeqIO
 
-def is_set(seq, target):
-    """
-    Determine if string is in a target set and yield an output corresponding to
-    each case
-    """
-    for i in seq:
-        if i in target:
-            yield True
-        else:
-            yield False
-
-def is_set_vector(seq, target):
-    """
-    Use the numpy library to determine in a large array if values are in
-    the set. Very useful to generate the maks.,
-    """
-    bool_mask = np.array(seq) == target
-    return bool_mask
 
 
 class RefSeq(object):
@@ -41,41 +22,30 @@ class RefSeq(object):
         return chrnames
     def dress_up_seq(self):
         " Mask the genome "
-        n_set = set(["N"])
-        purine_set = set(["A", "G"])
-        strong_set = set(["C", "G"])
-
+        n_re = re.compile(str("[N]"))
+        purine_re = re.compile("[AaGg]")
+        strong_re = re.compile("[CcGg]")
         chr_mask = {}
 
-        for i in self.get_chr_names():
+        for chr_id in self.get_chr_names():
+            reference_seq = str(self.chr_refseq[chr_id].seq)
 
-            #print("Masking Chromosome {}".format(i))
+            n_mask = np.empty(len(reference_seq), dtype=bool)
+            n_mask.fill(1) # all values to True
+            idx = [i.start() for i in re.finditer(n_re, reference_seq)]
+            n_mask[idx] = 0 # I put False when the position is masked
 
-            reference_seq = self.chr_refseq[i]
-            # this is the inverse mask, see below
-            # maybe a bit dangerous
-            n_mask = [i for i in tqdm.tqdm(is_set(reference_seq,
-                                                  target=n_set),
-                                           total=len(reference_seq))]
+            purine_mask = np.empty(len(reference_seq), dtype=bool)
+            purine_mask.fill(0) # all values to False
+            idx = [i.start() for i in re.finditer(purine_re, reference_seq)]
+            purine_mask[idx] = 1 # insert T when regex is matched
 
-            purine_mask = [i for i in tqdm.tqdm(is_set(reference_seq,
-                                                       target=purine_set),
-                                                total=len(reference_seq))]
+            strong_mask = np.empty(len(reference_seq), dtype=bool)
+            strong_mask.fill(0) # all values to False
+            idx = [i.start() for i in re.finditer(strong_re, reference_seq)]
+            strong_mask[idx] = 1
 
-            strong_mask = [i for i in tqdm.tqdm(is_set(reference_seq,
-                                                       target=strong_set),
-                                                total=len(reference_seq))]
-
-            n_mask = np.array(n_mask)
-            # here we invert the boolean vector because the positions that are
-            # callable are the ones that not have a N and therefore that are
-            # not in the set.
-            n_mask = np.invert(n_mask)
-
-            purine_mask = np.array(purine_mask)
-            strong_mask = np.array(strong_mask)
-
-            chr_mask[i] = (n_mask, purine_mask, strong_mask)
+            chr_mask[chr_id] = (n_mask, purine_mask, strong_mask)
 
         return chr_mask
 
