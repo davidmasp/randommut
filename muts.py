@@ -63,9 +63,9 @@ class Mut(object):
         """
         if self.pos_start == self.pos_end:
             pos = self.pos_start
-            le = pos-k
-            re = pos+k+1
-            mask_cont = tuple(i[le:re] for i in masks)
+            left_end = pos-k
+            rigth_end = pos+k+1
+            mask_cont = tuple(i[left_end:rigth_end] for i in masks)
             context = Seq("".join(rs.maskstoseq(mask_cont)))
 
             if context[k] not in set(["C", "A"]):
@@ -95,7 +95,7 @@ class Mut(object):
             left_end = 0
 
         # end of the common code
-        ctx = Seq(self.get_context(masks))
+        ctx = Seq(self.get_context(masks, k=k))
         ctx_rev = ctx.reverse_complement()
 
         left_pair = set([ctx[0], ctx_rev[0]])
@@ -253,6 +253,9 @@ class MutSet(object):
         return rand_df
 
     def randomize_mutset_context(self, times, k, wlength, genome_object):
+        """
+        to change
+        """
         pass
 
 
@@ -287,7 +290,7 @@ def mask_to_pvector(mask):
     return pvector
 
 
-def compute_bimask(masks,biset):
+def compute_bimask(masks, biset):
     """
     Internally transforms inputed masks to desidred bisets of bases. This
     mean that I can transform the 3 masks in a mask that contains all G and Ts.
@@ -322,6 +325,6 @@ def compute_bimask(masks,biset):
         mask_res = masks[1]
 
     # important to not forget the n_mask
-    mask_res = np.logical_and(mask_res,masks[0])
+    mask_res = np.logical_and(mask_res, masks[0])
 
     return mask_res
