@@ -3,6 +3,7 @@ This module includes classes and methods to store mutations.
 Maybe here the randomiation should occur.
 """
 
+import re
 from tqdm import tqdm
 import numpy as np
 import pandas as pd
@@ -27,7 +28,7 @@ class Mut(object):
         self.chr_id = chr_id
         if to0base:
             self.pos_start = pos_start - 1 # all should be 0 based
-            self.pos_end = pos_end - 1
+            self.pos_end = pos_end - 1 # why thiss??
         else:
             self.pos_start = pos_start  #  coming from a bed file
             self.pos_end = pos_end
@@ -44,9 +45,7 @@ class Mut(object):
             self.alt = Seq(alt)
 
 
-    def get_tr(self):
-        " get the transision in MS6 format"
-        return "{}>{}".format(self.ref, self.alt)
+    
     def get_tr96(self, masks):
         " get the mutation subtype in MS96 format"
         ctx = self.get_context(masks)
@@ -185,36 +184,69 @@ class MutSet(object):
                  strand,
                  to0base=True):
 
+        # each mutset have only one chromosome
+        if len(chr_id) != 1:
+            if len(np.unique(chr_id)) == 1:
+                chr_id = str(np.unique(chr_id))
+            else:
+                raise ValueError
+
+        self.chr_id = chr_id
+
+        # here I check if all lists have the same length
         common_length = len(pos_start)
+        if any(len(lst) != common_length for lst in [pos_end,
+                                                     sample_id,
+                                                     ref,
+                                                     alt,
+                                                     strand]):
+            raise ValueError
 
-        # HOW DO i CHECK THE SAME LENGTH FOR ALL THE ARRAYS?
+        # if input comes from bed file no need for conversion
+        if to0base:
+            pos_start = np.array(pos_start) - 1
+            pos_end = np.array(pos_end)
+            self.pos = np.column_stack((pos_start, pos_end))
+        else:
+            pos_start = np.array(pos_start)
+            pos_end = np.array(pos_end)
+            self.pos = np.column_stack((pos_start, pos_end))
 
-        self.mutset = {}
 
-        chr_unique = np.unique(chr_id)
+        strand_re = re.compile("^[-0]$")
+        idx = re.finditer(strand_re, str(strand))
 
-        ref_unique = np.unique(ref)
+        # this is not super fast but most of the time we will have positive
+        for i in idx:
+            ref[i] = Seq(ref[i]).reverse_complement()
+            alt[i] = Seq(alt[i]).reverse_complement()
 
-        sample_unique = np.unique(sample_id)
+        self.meta = np.column_stack((sample_id, ref, alt))
+    def get_chr_id(self):
+        "return the chromosome id"
+        return self.chr_id
+    def get_sample(self):
+        " return sample as a list "
+        return self.meta[:, 0]
+    def get_ref(self):
+        " return the references as a list "
+        return self.meta[:, 1]
+    def get_alt(self):
+        " return alternative as a list "
+        return self.meta[:, 2]
+    def get_tr(self):
+        " get the transision in MS6 format"
+        def make_tr(arr):
+            # this uses the A C format (useful to make generalization here)
+            if arr[0] in ["T", "G"]:
+                arr[0] = Seq(arr[0]).reverse_complement()
+                arr[1] = Seq(arr[1]).reverse_complement()
+            return "{}>{}".format(arr[0], arr[1])
+        res = np.apply_along_axis( make_tr, axis=1, arr=self.meta[:, [1, 2]] )
+        return res
 
-        for i in chr_unique:
-            self.mutset[i] = {}
-            for j in ref_unique:
-                self.mutset[i][j] = {}
-                for k in sample_unique:
-                    self.mutset[i][j][k] = []
+        
 
-        for i in range(common_length):
-            tmp_mut = Mut(chr_id=chr_id[i],
-                          pos_start=pos_start[i],
-                          pos_end=pos_end[i],
-                          sample_id=sample_id[i],
-                          ref=ref[i],
-                          alt=alt[i],
-                          strand=strand[i],
-                          to0base=to0base)
-
-            self.mutset[chr_id[i]][ref[i]][sample_id[i]].append(tmp_mut)
     def randomize_mutset_pair(self, times, wlength, genome_object):
         """
         Function to generate random positions conserving the same pair
