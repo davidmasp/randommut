@@ -111,13 +111,14 @@ def rand_single_chr(chromosome_object, mutset_object, times, winlen):
     pos = mutset_object.pos
     left_end = pos[:, 0] - winlen # start minus width
 
-    rand_pos = np.empty(np.shape(pos), dtype=int)
+    rand_pos = np.empty((len(pos), times), dtype=int)
     rand_pos.fill(0) # safety first
 
     for ctx in rand_res:
         idx = ctx_idx[ctx]
-        rand_pos[idx,] = rand_res[ctx] + left_end[idx] # we go back to oiginal
-
+        # we go back to oiginal
+        original_positions = np.array(left_end[idx]).reshape([len(idx), 1])
+        rand_pos[idx, ] = rand_res[ctx] + original_positions
     return rand_pos
 
 
