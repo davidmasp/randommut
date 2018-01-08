@@ -24,7 +24,7 @@ class Genome(object):
     Class to store the 4 masks that will repreesent the available chromosome
     """
     def __init__(self, chr_list, assembly):
-        self.chr_list = chr_list 
+        self.chr_list = chr_list
         self.assembly = assembly
 
     def __len__(self):
