@@ -62,13 +62,14 @@ def rand_single_chr(chromosome_object, mutset_object, times, winlen):
         if ctx in ctx_idx:
             ctx_idx[ctx].append(idx)
         elif ctx_revcomp in ctx_idx:
-            ctx_idx[ctx_revcomp].append(idx)
+            ctx_idx[str(ctx_revcomp)].append(idx)
         else:
             ctx_idx[ctx] = [idx]
 
     #3 + 4
     ctx_matrix = {}
     for ctx in ctx_idx:
+        print(ctx)
         current_idx = ctx_idx[ctx]
 
         ctx_revcomp = Seq(ctx).reverse_complement()
@@ -77,10 +78,11 @@ def rand_single_chr(chromosome_object, mutset_object, times, winlen):
         biset_right = set([ctx[2], ctx_revcomp[2]])
         biset_center = set([ctx[1], ctx_revcomp[1]])
 
-        mask_left = compute_bimask(mask_matrix_raw[current_idx,], biset_left)
-        mask_right = compute_bimask(mask_matrix_raw[current_idx,], biset_right)
-        mask_center = compute_bimask(mask_matrix_raw[current_idx,],
-                                     biset_center)
+        current_mask_matrix = [i[current_idx,] for i in mask_matrix_raw]
+
+        mask_left = compute_bimask(current_mask_matrix, biset_left)
+        mask_right = compute_bimask(current_mask_matrix, biset_right)
+        mask_center = compute_bimask(current_mask_matrix, biset_center)
 
         mask_left_shifted = np.apply_along_axis(shift5,
                                                 axis=1, # this should be rows
@@ -207,6 +209,11 @@ def compute_bimask(masks, biset):
 
     gt_set = set(["G", "T"])
     ca_set = set(["C", "A"])
+    
+    c_set = set(["C"])
+    a_set = set(["A"])
+    t_set = set(["T"])
+    g_set = set(["G"])
 
     # I check which option are we talking about and do the appropiate masks
     if biset == ca_set:
@@ -222,30 +229,62 @@ def compute_bimask(masks, biset):
         mask_res = np.logical_not(masks[1])
     elif biset == purine_set:
         mask_res = masks[1]
+    elif biset == c_set:
+        not_purine = np.logical_not(masks[1])
+        mask_res = np.logical_and(not_purine, masks[2])
+    elif biset == t_set:
+        not_purine = np.logical_not(masks[1])
+        not_strong = np.logical_not(masks[2])
+        mask_res = np.logical_and(not_purine, not_strong)
+    elif biset == g_set:
+        mask_res = np.logical_and(masks[2], masks[1])
+    elif biset == a_set:
+        not_strong = np.logical_not(masks[2])
+        mask_res = np.logical_and(masks[1], not_strong)
+    else:
+        print(biset)
+        raise ValueError
 
     # important to not forget the n_mask
-    mask_res = np.logical_and(mask_res, masks[0])
+    mask_final = np.logical_and(mask_res, masks[0])
 
-    return mask_res
+    return mask_final
 
 def generate_mask_matrix(mutset_object, chromosome_object, winlen):
     """
     It generates mask matrix
     """
     winlen = winlen + 1 # I think (due to the 0 based stuff)
-    mask_matrix = (np.empty([len(mutset_object.pos), winlen], dtype=bool),
-                   np.empty([len(mutset_object.pos), winlen], dtype=bool),
-                   np.empty([len(mutset_object.pos), winlen], dtype=bool))
+    total_length = winlen + winlen + 1 # this because of the middle position
 
-    for i in mask_matrix:
-        i.fill(0) # this is very critical I checked should work
+    mask_matrix = [np.empty([len(mutset_object.pos), total_length], dtype=bool),
+                   np.empty([len(mutset_object.pos), total_length], dtype=bool),
+                   np.empty([len(mutset_object.pos), total_length], dtype=bool)]
+
+    #for i in mask_matrix:
+    #    i.fill(0) # this is very critical I checked should work
 
     masks = chromosome_object.seq_mask
 
-    for j in masks:
-        for i, val in enumerate(mutset_object.pos): #  this should enumerate rows
+    chromosome_length = len(masks[0])
+
+    for j, original_mask in enumerate(masks):
+        for i, val in enumerate(mutset_object.pos): #this should enumerate rows
             left_end = val[0] - winlen # this is the start and then i substract
             right_end = val[1] + winlen # this is the end and then i add
-            mask_matrix[j][i,] = masks[j][left_end:right_end]
+
+            if left_end < 0:
+                print("FFFFFF")
+                false_pos = winlen - val[0]
+                mask_matrix[j][i, :false_pos] = False
+                mask_matrix[j][i, false_pos:] = original_mask[:right_end]
+            elif right_end > chromosome_length:
+                print("Jskjdhkj")
+                false_pos = int(right_end) - int(chromosome_length) #this is p
+                end_of_world = total_length - false_pos
+                mask_matrix[j][i, :end_of_world] = original_mask[left_end:chromosome_length]
+                mask_matrix[j][i, end_of_world:] = False
+            else:
+                mask_matrix[j][i,] = original_mask[left_end:right_end]
 
     return mask_matrix
