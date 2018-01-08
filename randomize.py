@@ -115,7 +115,7 @@ def rand_single_chr(chromosome_object, mutset_object, times, winlen):
     for ctx in rand_res:
         idx = ctx_idx[ctx]
         rand_pos[idx,] = rand_res[ctx] + left_end[idx] # we go back to oiginal
-    
+
     return rand_pos
 
 
@@ -124,6 +124,11 @@ def rand_single_chr(chromosome_object, mutset_object, times, winlen):
 # extracted from https://stackoverflow.com/a/42642326/5410410
 # preallocate empty array and assign slice by chrisaycock
 def shift5(arr, num, fill_value=np.nan):
+    """
+    function that shifts num elements of a numpy array to the right (positive)
+    or left (negative) and incorporates in the missing spots the fill-value
+    argument (nan) by default.
+    """
     result = np.empty_like(arr)
     if num > 0:
         result[:num] = fill_value
