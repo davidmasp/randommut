@@ -4,34 +4,6 @@ Instructions to randomize the genome
 
 import numpy as np
 from Bio.Seq import Seq
-import randommut.genome as gn
-import randommut.muts as mt
-
-
-def rand_pipe(muts_path, genome_path, assembly, times, winlen):
-    """
-    perform the randomization
-    """
-
-    # genome is a list of chromosomes (iteration through this)
-    # mutset is a dictionary of chomosomes
-
-    genome = gn.genome_from_path(genome_path, assembly)
-    muts = mt.mutset_from_path(muts_path)
-
-    randomize_output = {}
-    for chrom in genome.chr_list:
-        chr_id = chrom.chr_id()
-        if chr_id in muts:
-            mutset = muts[chr_id]
-            randomize_output[chr_id] = rand_single_chr(chrom,
-                                                       mutset,
-                                                       times,
-                                                       winlen)
-        else:
-            continue
-
-    return randomize_output
 
 
 
