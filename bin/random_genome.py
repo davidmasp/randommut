@@ -5,7 +5,7 @@ import pickle
 import randommut.genome as gn
 import randommut.muts as mt
 import randommut.randomize as rnd
-
+import fire # may be useful?
 
 def serialize_genome(genome_path, assembly):
     """
@@ -14,7 +14,6 @@ def serialize_genome(genome_path, assembly):
     if genome_path.endswith(('.fa', '.fasta')):
         genome = gn.genome_from_path(genome_path, assembly)
         base = os.path.basename(genome_path)
-
         genome_path_pickle = "{}{}".format(base, ".p")
 
         pickle.dump(genome, open(genome_path_pickle, "wb"))
@@ -52,3 +51,6 @@ def randomize(muts_path, genome_path, assembly, times, winlen):
             continue
 
     return randomize_output
+
+if __name__ == '__main__':
+    fire.Fire(randomize)
