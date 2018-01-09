@@ -5,6 +5,7 @@ Maybe here the randomiation should occur.
 
 import re
 import numpy as np
+import pandas as pd
 from Bio.Seq import Seq
 import randommut.refseq as rs
 
@@ -14,7 +15,7 @@ def mutset_from_path(av_input_path, to0base=True):
     """
     Obtain a dictoniary of mutset onbjects by chromosome
     """
-    table = np.genfromtxt(av_input_path, delimiter="\t")
+
     # colum definition
     # 0. chr
     # 1. start
@@ -24,26 +25,29 @@ def mutset_from_path(av_input_path, to0base=True):
     # 5. strand
     # 6. sample
 
-    chromosomes = table[:, 0]
+    table = pd.DataFrame.from_csv(av_input_path,
+                                  header=None,
+                                  sep="\t",
+                                  index_col=False)
 
     chrom_idx = {}
-    for idx, chrom in enumerate(chromosomes):
-        if chrom in chrom_idx:
-            chrom_idx[chrom].append(idx)
-        else:
-            chrom_idx[chrom] = [idx]
+    chrom_unique = np.unique(table.iloc[:, [0]])
+
+    for chrom in chrom_unique:
+        idx = np.array(table.iloc[:, [0]] == chrom)
+        chrom_idx[chrom] = [i for i, x in enumerate(idx) if x]
 
     ms_chr = {}
     for chrom in chrom_idx:
         idx = chrom_idx[chrom]
         #tmp_table = table[idx,]
         ms_chr[chrom] = MutSet(chr_id=chrom,
-                               pos_start=table[idx, 1],
-                               pos_end=table[idx, 2],
-                               ref=table[idx, 3],
-                               alt=table[idx, 4],
-                               strand=table[idx, 6],
-                               sample_id=table[idx, 5],
+                               pos_start=table.iloc[idx, 1],
+                               pos_end=table.iloc[idx, 2],
+                               ref=table.iloc[idx, 3],
+                               alt=table.iloc[idx, 4],
+                               strand=table.iloc[idx, 6],
+                               sample_id=table.iloc[idx, 5],
                                to0base=to0base)
 
     return ms_chr
