@@ -71,18 +71,17 @@ def rand_single_chr(chromosome_object, mutset_object, times, winlen):
     for ctx in ctx_idx:
         print(ctx)
         current_idx = ctx_idx[ctx]
-
-        ctx_revcomp = Seq(ctx).reverse_complement()
-
-        biset_left = set([ctx[0], ctx_revcomp[0]])
-        biset_right = set([ctx[2], ctx_revcomp[2]])
-        biset_center = set([ctx[1], ctx_revcomp[1]])
-
         current_mask_matrix = [i[current_idx,] for i in mask_matrix_raw]
 
-        mask_left = compute_bimask(current_mask_matrix, biset_left)
-        mask_right = compute_bimask(current_mask_matrix, biset_right)
-        mask_center = compute_bimask(current_mask_matrix, biset_center)
+        # all this could go into a function FROM HERE
+        # obtain the mask for ctx
+        set_left = set(ctx[0])
+        set_right = set(ctx[2])
+        set_center = set(ctx[1])
+
+        mask_left = compute_bimask(current_mask_matrix, set_left)
+        mask_right = compute_bimask(current_mask_matrix, set_right)
+        mask_center = compute_bimask(current_mask_matrix, set_center)
 
         mask_left_shifted = np.apply_along_axis(shift5,
                                                 axis=1, # this should be rows
@@ -98,8 +97,41 @@ def rand_single_chr(chromosome_object, mutset_object, times, winlen):
 
         mask_ends_context = np.logical_and(mask_left_shifted,
                                            mask_right_shifted)
-        mask_final_context = np.logical_and(mask_center, mask_ends_context)
-        ctx_matrix[ctx] = mask_final_context
+        mask_context_sense = np.logical_and(mask_center, mask_ends_context)
+        # TO HERE
+
+        # obtain the mask for reverse complement
+        ctx_revcomp = Seq(ctx).reverse_complement()
+
+        set_left = set(ctx_revcomp[0])
+        set_right = set(ctx_revcomp[2])
+        set_center = set(ctx_revcomp[1])
+
+        mask_left = compute_bimask(current_mask_matrix, set_left)
+        mask_right = compute_bimask(current_mask_matrix, set_right)
+        mask_center = compute_bimask(current_mask_matrix, set_center)
+
+        mask_left_shifted = np.apply_along_axis(shift5,
+                                                axis=1, # this should be rows
+                                                arr=mask_left,
+                                                num=1, # this moves to the right
+                                                fill_value=False)
+
+        mask_right_shifted = np.apply_along_axis(shift5,
+                                                 axis=1, # this should be rows
+                                                 arr=mask_right,
+                                                 num=-1, # this moves to  left
+                                                 fill_value=False)
+
+        mask_ends_context = np.logical_and(mask_left_shifted,
+                                           mask_right_shifted)
+
+        mask_context_reverse = np.logical_and(mask_center, mask_ends_context)
+
+        mask_final = np.logical_or(mask_context_reverse, mask_context_sense)
+
+        print(np.sum(mask_final))
+        ctx_matrix[ctx] = mask_final
 
     # 5
     rand_res = {}
@@ -275,12 +307,12 @@ def generate_mask_matrix(mutset_object, chromosome_object, winlen):
             right_end = val[1] + winlen # this is the end and then i add
 
             if left_end < 0:
-                print("FFFFFF")
+                print("SHORT")
                 false_pos = winlen - val[0]
                 mask_matrix[j][i, :false_pos] = False
                 mask_matrix[j][i, false_pos:] = original_mask[:right_end]
             elif right_end > chromosome_length:
-                print("Jskjdhkj")
+                print("LONG")
                 false_pos = int(right_end) - int(chromosome_length) #this is p
                 end_of_world = total_length - false_pos
                 mask_matrix[j][i, :end_of_world] = original_mask[left_end:chromosome_length]
