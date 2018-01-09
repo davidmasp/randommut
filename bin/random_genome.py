@@ -1,11 +1,27 @@
+#!/usr/bin/env python
 
-
+import os
 import pickle
 import randommut.genome as gn
 import randommut.muts as mt
 import randommut.randomize as rnd
 
-def rand_pipe(muts_path, genome_path, assembly, times, winlen):
+
+def serialize_genome(genome_path, assembly):
+    """
+    Get a fasta file and transform to a pickle object
+    """
+    if genome_path.endswith(('.fa', '.fasta')):
+        genome = gn.genome_from_path(genome_path, assembly)
+        base = os.path.basename(genome_path)
+
+        genome_path_pickle = "{}{}".format(base, ".p")
+
+        pickle.dump(genome, open(genome_path_pickle, "wb"))
+    else:
+        raise ValueError
+
+def randomize(muts_path, genome_path, assembly, times, winlen):
     """
     perform the randomization
     """
@@ -16,6 +32,8 @@ def rand_pipe(muts_path, genome_path, assembly, times, winlen):
     if genome_path.endswith('.p'):
         genome_path_pickle = genome_path
         genome = pickle.load(open(genome_path_pickle, "rb"))
+        if genome.assembly != assembly:
+            raise ValueError
     elif genome_path.endswith(('.fa', '.fasta')):
         genome = gn.genome_from_path(genome_path, assembly)
 
@@ -27,9 +45,9 @@ def rand_pipe(muts_path, genome_path, assembly, times, winlen):
         if chr_id in muts:
             mutset = muts[chr_id]
             randomize_output[chr_id] = rnd.rand_single_chr(chrom,
-                                                       mutset,
-                                                       times,
-                                                       winlen)
+                                                           mutset,
+                                                           times,
+                                                           winlen)
         else:
             continue
 
