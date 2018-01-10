@@ -33,7 +33,7 @@ def serialize_genome(genome_path, assembly):
 
 def randomize(muts_path, genome_path, assembly, times, winlen):
     """
-    perform the randomization
+    perform  the randomization
     """
 
     # genome is a list of chromosomes (iteration through this)

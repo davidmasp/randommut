@@ -1,6 +1,8 @@
 """
 Functions to store and serialize refseqs
 """
+
+import sys
 import re
 import numpy as np
 from Bio import SeqIO
@@ -27,7 +29,12 @@ class RefSeq(object):
         strong_re = re.compile("[CcGg]")
         chr_mask = {}
 
+        sys.stderr.write("Starting Serialization\n")
+
         for chr_id in self.get_chr_names():
+
+            sys.stderr.write("Starting Serialization of {}\n".format(chr_id))
+
             reference_seq = str(self.chr_refseq[chr_id].seq)
 
             n_mask = np.empty(len(reference_seq), dtype=bool)

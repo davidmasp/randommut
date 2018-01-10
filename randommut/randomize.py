@@ -2,6 +2,7 @@
 Instructions to randomize the genome
 """
 
+import sys
 import numpy as np
 from Bio.Seq import Seq
 
@@ -214,12 +215,13 @@ def compute_bimask(masks, biset):
 
     gt_set = set(["G", "T"])
     ca_set = set(["C", "A"])
-    
+
     c_set = set(["C"])
     a_set = set(["A"])
     t_set = set(["T"])
     g_set = set(["G"])
 
+    n_set = set(["N"])
     # I check which option are we talking about and do the appropiate masks
     if biset == ca_set:
         mask_res = np.logical_xor(masks[1], masks[2])
@@ -246,6 +248,8 @@ def compute_bimask(masks, biset):
     elif biset == a_set:
         not_strong = np.logical_not(masks[2])
         mask_res = np.logical_and(masks[1], not_strong)
+    elif biset == n_set:
+        mask_res = masks[0]
     else:
         print(biset)
         raise ValueError
