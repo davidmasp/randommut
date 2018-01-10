@@ -1,5 +1,15 @@
 #!/usr/bin/env python
 
+"""
+    RANDOM MUT
+    ~~~~~~~~~~~~~
+
+    This script uses the package randommut to randomize user set positions.
+
+    :copyright: year by my name, see AUTHORS for more details
+    :license: license_name, see LICENSE for more details
+"""
+
 import os
 import sys
 import pickle
@@ -63,14 +73,23 @@ def randomize(muts_path, genome_path, assembly, times, winlen):
         if chr_id in muts:
             mutset = muts[chr_id]
             pos_df = pd.DataFrame(mutset.pos)
+            pos_df.columns = ['start', 'end']
             meta_df = pd.DataFrame(mutset.meta)
+            meta_df.columns = ['sample', 'ref', 'alt']
 
             rand_out = randomize_output[chr_id]
             rand_df = pd.DataFrame(rand_out)
+            rand_df.columns = ["R{}".format(i+1) for i in range(times)]
 
             tmp_full = pd.concat([pos_df, meta_df, rand_df], axis=1)
+            #import pdb; pdb.set_trace()
             tmp_full["chr"] = chr_id
             tmp_full["strand"] = 1
+            # this should order the columns
+            # chr start end strand ref alt R1 ... Rtimes
+            cols = tmp_full.columns.tolist()
+            cols = cols[-2:-1] + cols[0:2] + cols[-1:] + cols[2:3] + cols[3:-2]
+            tmp_full = tmp_full[cols]
             full_df.append(tmp_full)
         else:
             continue
@@ -92,7 +111,7 @@ def write_randomized_positions(randomize_output, outfilename, compression):
     sys.stderr.write("Writting...\n")
     randomize_output.to_csv(outfilename,
                             sep="\t",
-                            header=False,
+                            header=True,
                             index=False,
                             compression=compression)
 
