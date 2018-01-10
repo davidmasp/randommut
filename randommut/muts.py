@@ -46,8 +46,8 @@ def mutset_from_path(av_input_path, to0base=True):
                                pos_end=table.iloc[idx, 2],
                                ref=table.iloc[idx, 3],
                                alt=table.iloc[idx, 4],
-                               strand=table.iloc[idx, 6],
-                               sample_id=table.iloc[idx, 5],
+                               strand=table.iloc[idx, 5],
+                               sample_id=table.iloc[idx, 6],
                                to0base=to0base)
 
     return ms_chr
@@ -95,7 +95,7 @@ class MutSet(object):
             self.pos = np.column_stack((pos_start, pos_end))
 
 
-        strand_re = re.compile("^[-0]$")
+        strand_re = re.compile("^[-0]$") # could break not tested
         idx = re.finditer(strand_re, str(strand))
 
         # this is not super fast but most of the time we will have positive
