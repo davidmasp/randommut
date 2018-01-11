@@ -35,7 +35,7 @@ def randomize(muts_path, genome_path, assembly, times, winlen):
     """
     perform  the randomization
     """
-
+    # Optimize this monster please
     # genome is a list of chromosomes (iteration through this)
     # mutset is a dictionary of chomosomes
 
@@ -68,7 +68,7 @@ def randomize(muts_path, genome_path, assembly, times, winlen):
     # recover all positions
 
     full_df = []
-    for chrom in genome.chr_list:
+    for chrom in genome.chr_list: #opt
         chr_id = chrom.chr_id
         if chr_id in muts:
             mutset = muts[chr_id]
@@ -83,12 +83,13 @@ def randomize(muts_path, genome_path, assembly, times, winlen):
 
             tmp_full = pd.concat([pos_df, meta_df, rand_df], axis=1)
             #import pdb; pdb.set_trace()
+            tmp_full["ctx"] = mutset.get_context(chrom) #opt
             tmp_full["chr"] = chr_id
             tmp_full["strand"] = 1
             # this should order the columns
             # chr start end strand ref alt R1 ... Rtimes
             cols = tmp_full.columns.tolist()
-            cols = cols[-2:-1] + cols[0:2] + cols[-1:] + cols[2:3] + cols[3:-2]
+            cols = cols[-2:-1] + cols[0:2] + cols[-1:] + cols[2:3] + cols[3:5] + cols[-3:-2] + cols[5:-3]
             tmp_full = tmp_full[cols]
             full_df.append(tmp_full)
         else:
