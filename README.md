@@ -20,6 +20,12 @@ The `winlen` argument (`-w`) is equivalent to the length of the windows where th
 python random_genome_classic.py -M randomize -g chr1.fa.p -m PACA_AU_chr1_small.tsv -a hg19 -o outfile.test -t 50 -w 50000
 ```
 
+### Remove NNN positions
+
+```bash
+awk '$8!~/N/ {print($0);}' output_file.tsv
+```
+
 ### Check results are in the winlen range
 
 Open the file with Excel.
