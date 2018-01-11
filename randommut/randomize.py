@@ -192,7 +192,6 @@ def randomize_mask_row(mask, times):
                                     replace=True)
     else:
         rand_idx = np.zeros(times)
-        rand_idx.fill(-1)
 
     return rand_idx
 
@@ -264,10 +263,10 @@ def compute_bimask(masks, biset):
         # I am setting the whole mask to F
         # then I add a step in the rand process when if this happens
         # I generate -1 as randomized positions.
-        mask_res = np.empty(len(masks[0]), dtype=bool)
+        mask_res = np.empty(np.shape(masks[0]), dtype=bool)
         mask_res.fill(0)
     else:
-        print(biset)
+        sys.stderr.write(biset)
         raise ValueError
 
     # important to not forget the n_mask
