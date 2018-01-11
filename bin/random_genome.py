@@ -40,7 +40,7 @@ def randomize(muts_path, genome_path, assembly, times, winlen):
 
     randomize_output = {}
     for chrom in genome.chr_list:
-        chr_id = chrom.chr_id()
+        chr_id = chrom.chr_id
         if chr_id in muts:
             mutset = muts[chr_id]
             randomize_output[chr_id] = rnd.rand_single_chr(chrom,
