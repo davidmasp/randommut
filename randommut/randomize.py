@@ -126,9 +126,6 @@ def rand_single_chr(chromosome_object, mutset_object, times, winlen):
         rand_pos[idx, ] = rand_res[ctx] + original_positions
     return rand_pos
 
-
-
-
 # extracted from https://stackoverflow.com/a/42642326/5410410
 # preallocate empty array and assign slice by chrisaycock
 def shift5(arr, num, fill_value=np.nan):
@@ -160,9 +157,15 @@ def mask_to_pvector(mask):
     """
     pvector = np.zeros(len(mask)) # the zeros function add 0 as a float
 
-    prob_val = 1 / np.sum(mask)
+    total_pos = np.sum(mask)
 
-    pvector[mask] = prob_val
+    if total_pos != 0:
+        prob_val = 1 / total_pos
+        pvector[mask] = prob_val
+    elif total_pos == 0:
+        pvector.fill(-1)
+    else:
+        raise ValueError
 
     # necessary? it makes the function crash, choice already handles this
     #if pvector.sum() != 1:
@@ -181,7 +184,15 @@ def randomize_mask_row(mask, times):
     # independent experiments, then, this should be rep true.
     pvector = mask_to_pvector(mask)
     int_size = len(pvector) # this should be equibalent to the wl*2
-    rand_idx = np.random.choice(int_size, p=pvector, size=times, replace=True)
+
+    if pvector[0] != -1:
+        rand_idx = np.random.choice(int_size,
+                                    p=pvector,
+                                    size=times,
+                                    replace=True)
+    else:
+        rand_idx = np.zeros(times)
+        rand_idx.fill(-1)
 
     return rand_idx
 
@@ -249,7 +260,12 @@ def compute_bimask(masks, biset):
         not_strong = np.logical_not(masks[2])
         mask_res = np.logical_and(masks[1], not_strong)
     elif biset == n_set:
-        mask_res = masks[0]
+        # see isssue #1 in gitea
+        # I am setting the whole mask to F
+        # then I add a step in the rand process when if this happens
+        # I generate -1 as randomized positions.
+        mask_res = np.empty(len(masks[0]), dtype=bool)
+        mask_res.fill(0)
     else:
         print(biset)
         raise ValueError
