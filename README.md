@@ -37,3 +37,10 @@ Open conditional formating, custom rule
 ```
 
 Change `50000` with your winlen.
+
+### Convert ICGC data in the inputed format
+
+```bash
+icgc="path/to/icgc"
+zcat $icgc| awk 'BEGIN {FS="\t";OFS="\t"} $14~/single/{$9="chr"$9;print($9,$10,$11,$16,$17,$12,$5);}'
+```
