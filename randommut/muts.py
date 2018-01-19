@@ -86,8 +86,8 @@ class MutSet(object):
 
         # if input comes from bed file no need for conversion
         if to0base:
-            pos_start = np.array(pos_start) - 1
-            pos_end = np.array(pos_end)
+            pos_start = np.array(pos_start,dtype=int) - 1
+            pos_end = np.array(pos_end,dtype=int)
             self.pos = np.column_stack((pos_start, pos_end))
         else:
             pos_start = np.array(pos_start)

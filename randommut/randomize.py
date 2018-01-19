@@ -2,6 +2,7 @@
 Instructions to randomize the genome
 """
 
+import sys
 import numpy as np
 from Bio.Seq import Seq
 
@@ -125,9 +126,6 @@ def rand_single_chr(chromosome_object, mutset_object, times, winlen):
         rand_pos[idx, ] = rand_res[ctx] + original_positions
     return rand_pos
 
-
-
-
 # extracted from https://stackoverflow.com/a/42642326/5410410
 # preallocate empty array and assign slice by chrisaycock
 def shift5(arr, num, fill_value=np.nan):
@@ -159,9 +157,15 @@ def mask_to_pvector(mask):
     """
     pvector = np.zeros(len(mask)) # the zeros function add 0 as a float
 
-    prob_val = 1 / np.sum(mask)
+    total_pos = np.sum(mask)
 
-    pvector[mask] = prob_val
+    if total_pos != 0:
+        prob_val = 1 / total_pos
+        pvector[mask] = prob_val
+    elif total_pos == 0:
+        pvector.fill(-1)
+    else:
+        raise ValueError
 
     # necessary? it makes the function crash, choice already handles this
     #if pvector.sum() != 1:
@@ -180,7 +184,14 @@ def randomize_mask_row(mask, times):
     # independent experiments, then, this should be rep true.
     pvector = mask_to_pvector(mask)
     int_size = len(pvector) # this should be equibalent to the wl*2
-    rand_idx = np.random.choice(int_size, p=pvector, size=times, replace=True)
+
+    if pvector[0] != -1:
+        rand_idx = np.random.choice(int_size,
+                                    p=pvector,
+                                    size=times,
+                                    replace=True)
+    else:
+        rand_idx = np.zeros(times)
 
     return rand_idx
 
@@ -214,12 +225,13 @@ def compute_bimask(masks, biset):
 
     gt_set = set(["G", "T"])
     ca_set = set(["C", "A"])
-    
+
     c_set = set(["C"])
     a_set = set(["A"])
     t_set = set(["T"])
     g_set = set(["G"])
 
+    n_set = set(["N"])
     # I check which option are we talking about and do the appropiate masks
     if biset == ca_set:
         mask_res = np.logical_xor(masks[1], masks[2])
@@ -246,8 +258,15 @@ def compute_bimask(masks, biset):
     elif biset == a_set:
         not_strong = np.logical_not(masks[2])
         mask_res = np.logical_and(masks[1], not_strong)
+    elif biset == n_set:
+        # see isssue #1 in gitea
+        # I am setting the whole mask to F
+        # then I add a step in the rand process when if this happens
+        # I generate -1 as randomized positions.
+        mask_res = np.empty(np.shape(masks[0]), dtype=bool)
+        mask_res.fill(0)
     else:
-        print(biset)
+        sys.stderr.write(biset)
         raise ValueError
 
     # important to not forget the n_mask
