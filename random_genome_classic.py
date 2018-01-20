@@ -6,7 +6,7 @@
 
     This script uses the package randommut to randomize user set positions.
 
-    :copyright: year by my name, see AUTHORS for more details
+    :copyright: 2018 by my David Mas @ IRBBarcelona, AUTHORS for more details
     :license: license_name, see LICENSE for more details
 """
 
@@ -40,7 +40,7 @@ def randomize(muts_path, genome_path, assembly, times, winlen):
     # mutset is a dictionary of chomosomes
 
     if genome_path.endswith('.p'):
-        sys.stderr.write("pickle format detected\n")
+        sys.stderr.write("Genome in pickle format detected\n")
         genome_path_pickle = genome_path
         genome = pickle.load(open(genome_path_pickle, "rb"))
         if genome.assembly != assembly:
@@ -48,10 +48,10 @@ def randomize(muts_path, genome_path, assembly, times, winlen):
     elif genome_path.endswith(('.fa', '.fasta')):
         genome = gn.genome_from_path(genome_path, assembly)
 
-    sys.stderr.write("genome read\n")
+    sys.stderr.write("Genome read\n")
 
     muts = mt.mutset_from_path(muts_path)
-    sys.stderr.write("muts read\n")
+    sys.stderr.write("Muts read\n")
 
     randomize_output = {}
     for chrom in genome.chr_list:
@@ -64,7 +64,7 @@ def randomize(muts_path, genome_path, assembly, times, winlen):
                                                            winlen)
         else:
             continue
-    sys.stderr.write("rand output generated\n")
+    sys.stderr.write("Rand output generated\n")
     # recover all positions
 
     full_df = []
@@ -115,6 +115,7 @@ def write_randomized_positions(randomize_output, outfilename, compression):
                             header=True,
                             index=False,
                             compression=compression)
+    sys.stderr.write("Results file available at {}".format(outfilename))
 
 if __name__ == "__main__":
     import argparse
