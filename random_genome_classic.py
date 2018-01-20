@@ -14,6 +14,7 @@ import os
 import sys
 import pickle
 import pandas as pd
+from tqdm import trange
 import randommut.genome as gn
 import randommut.muts as mt
 import randommut.randomize as rnd
@@ -31,7 +32,7 @@ def serialize_genome(genome_path, assembly):
     else:
         raise ValueError
 
-def randomize(muts_path, genome_path, assembly, times, winlen):
+def randomize(muts_path, genome_path, assembly, times, winlen, verbose):
     """
     perform  the randomization
     """
@@ -54,14 +55,21 @@ def randomize(muts_path, genome_path, assembly, times, winlen):
     sys.stderr.write("Muts read\n")
 
     randomize_output = {}
-    for chrom in genome.chr_list:
+
+    # adding the progress bar
+    chromosome_list = genome.chr_list
+    progress_chr = trange(len(chromosome_list))
+    for chrom_idx in progress_chr:
+        chrom = chromosome_list[chrom_idx]
         chr_id = chrom.chr_id
+        progress_chr.set_description('Randomizing {}'.format(chr_id))
         if chr_id in muts:
             mutset = muts[chr_id]
             randomize_output[chr_id] = rnd.rand_single_chr(chrom,
                                                            mutset,
                                                            times,
-                                                           winlen)
+                                                           winlen,
+                                                           verbose = verbose)
         else:
             continue
     sys.stderr.write("Rand output generated\n")
@@ -115,7 +123,7 @@ def write_randomized_positions(randomize_output, outfilename, compression):
                             header=True,
                             index=False,
                             compression=compression)
-    sys.stderr.write("Results file available at {}".format(outfilename))
+    sys.stderr.write("Results file available at {}\n".format(outfilename))
 
 if __name__ == "__main__":
     import argparse
@@ -144,7 +152,7 @@ if __name__ == "__main__":
                         choices=['gzip', 'bz2', None],
                         default=None,
                         help="If the output should be compressed")
-    parser.add_argument("-v", "--verbosity",
+    parser.add_argument("-v", "--verbose",
                         action="store_true",
                         default=False,
                         help="Script returns a more verbose messages.")
@@ -160,7 +168,8 @@ if __name__ == "__main__":
                             genome_path=args.genome,
                             assembly=args.assembly,
                             times=args.times,
-                            winlen=args.winlen)
+                            winlen=args.winlen,
+                            verbose = args.verbose)
 
         write_randomized_positions(randomize_output=out_obj,
                                    outfilename=args.outfile,

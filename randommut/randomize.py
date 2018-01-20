@@ -4,11 +4,12 @@ Instructions to randomize the genome
 
 import sys
 import numpy as np
+from tqdm import tqdm
 from Bio.Seq import Seq
 
 
 
-def rand_single_chr(chromosome_object, mutset_object, times, winlen):
+def rand_single_chr(chromosome_object, mutset_object, times, winlen, verbose):
     """
     Performs the rendomization process in just one chromosome
     """
@@ -31,7 +32,7 @@ def rand_single_chr(chromosome_object, mutset_object, times, winlen):
 
     for idx, ctx in enumerate(contexts):
         ctx_revcomp = Seq(ctx).reverse_complement()
-
+        ctx_revcomp = str(ctx_revcomp)
         if ctx in ctx_idx:
             ctx_idx[ctx].append(idx)
         elif ctx_revcomp in ctx_idx:
@@ -42,7 +43,8 @@ def rand_single_chr(chromosome_object, mutset_object, times, winlen):
     #3 + 4
     ctx_matrix = {}
     for ctx in ctx_idx:
-        sys.stderr.write(ctx)
+        if verbose:
+            tqdm.write("{}\n".format(ctx))
         current_idx = ctx_idx[ctx]
         current_mask_matrix = [i[current_idx,] for i in mask_matrix_raw]
 
@@ -103,7 +105,9 @@ def rand_single_chr(chromosome_object, mutset_object, times, winlen):
 
         mask_final = np.logical_or(mask_context_reverse, mask_context_sense)
 
-        sys.stderr.write(np.sum(mask_final))
+        number_ctx = np.sum(mask_final)
+        if verbose:
+            tqdm.write("Number of muts in context: {}\n".format(number_ctx))
         ctx_matrix[ctx] = mask_final
 
     # 5
@@ -298,12 +302,12 @@ def generate_mask_matrix(mutset_object, chromosome_object, winlen):
             right_end = val[1] + winlen # this is the end and then i add
 
             if left_end < 0:
-                sys.stderr.write("SHORT position found \n")
+                tqdm.write("SHORT position found \n")
                 false_pos = winlen - val[0]
                 mask_matrix[j][i, :false_pos] = False
                 mask_matrix[j][i, false_pos:] = original_mask[:right_end]
             elif right_end > chromosome_length:
-                sys.stderr.write("LONG position found \n")
+                tqdm.write("LONG position found \n")
                 false_pos = int(right_end) - int(chromosome_length) #this is p
                 end_of_world = total_length - false_pos
                 mask_matrix[j][i, :end_of_world] = original_mask[left_end:chromosome_length]
