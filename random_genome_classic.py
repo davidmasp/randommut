@@ -113,6 +113,23 @@ def randomize(muts_path, genome_path, assembly, times, winlen, verbose):
     return final_df
 
 
+def remove_clusters():
+    """
+    Remove the clusters by randomizing one time and getting the randomized
+    positions.
+    """
+    pass
+
+
+def add_custom_clusters():
+    """
+    Add clusters based on a defined distributions of distances.
+    In particular we need to give mean and standard deviation of the
+    normal log10 distribution.
+    In order to generate new distances we apply 10**norm(mean,sd)
+    """
+    pass
+
 def write_randomized_positions(randomize_output, outfilename, compression):
     """
     write the df in a file using pandas
