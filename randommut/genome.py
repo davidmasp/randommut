@@ -40,6 +40,12 @@ class Genome(object):
         " Yield a chromosome object in the list "
         for i in self.chr_list:
             yield i
+    def get_chr_len(self):
+        chr_len = {}
+        for i in self.chromosome_iterator():
+            chr_len[i.chr_id] = len(i)
+
+        return chr_len
 
 class Chromosome(object):
     """
@@ -58,3 +64,6 @@ class Chromosome(object):
     def strong_mask(self):
         " returns the strong mask, True is C G, False is A T"
         return self.seq_mask[2]
+    def __len__(self):
+        "returns the length of the chromosome"
+        return len(self.seq_mask[2])
