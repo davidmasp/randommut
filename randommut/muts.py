@@ -104,6 +104,8 @@ class MutSet(object):
             alt[i] = Seq(alt[i]).reverse_complement()
 
         self.meta = np.column_stack((sample_id, ref, alt))
+    def __len__(self):
+        return len(self.pos)
     def get_chr_id(self):
         "return the chromosome id"
         return self.chr_id
@@ -191,7 +193,36 @@ class MutSet(object):
 
             mut_list.append(mut)
         return mut_list
+    def divide_batch(self, muts_x_batch):
+        " Divide the current mutset object and yield different batches"
+        total_muts = len(self)
+        iterantions_n = total_muts // muts_x_batch
+        iterantions_n = iterantions_n + 1
 
+        first_positions = np.multiply(list(range(1, iterantions_n)),
+                                      muts_x_batch)
+        last_positions = np.multiply(list(range(1, iterantions_n + 1)),
+                                     muts_x_batch)
+        last_positions[-1] = total_muts
+        # I think I do not have to touch this (substracting 1 ) because
+        # I use the range functions that already does that.
+        print("Number of iterations {}".format(iterantions_n))
+        for i, s_idx in enumerate(first_positions):
+            # s_idx = first_positions[i]
+            e_idx = last_positions[i]
+
+            strand_info = ["+" for i in range(muts_x_batch)]
+
+            tmp = MutSet(chr_id=self.chr_id,
+                         pos_start=self.pos[s_idx:e_idx, 0],
+                         pos_end=self.pos[s_idx:e_idx, 1],
+                         sample_id=self.meta[s_idx:e_idx, 0],
+                         ref=self.meta[s_idx:e_idx, 1],
+                         alt=self.meta[s_idx:e_idx, 2],
+                         strand=strand_info,
+                         to0base=False)
+
+            yield tmp
 
 def num2chr(chr_array):
     " Transform the 37 notation to hg19 "
