@@ -298,9 +298,12 @@ def generate_mask_matrix(mutset_object, chromosome_object, winlen):
     # reduction after a while. I guess this is numpy storing a number vs
     # when it realises in only a boolean array. So it is an improvement I g.
     # Not final solution though.
-    mask_matrix = [np.zeros([len(mutset_object.pos), total_length], dtype=bool),
-                   np.zeros([len(mutset_object.pos), total_length], dtype=bool),
-                   np.zeros([len(mutset_object.pos), total_length], dtype=bool)]
+
+    n_muts = len(mutset_object.pos)
+
+    mask_matrix = [np.zeros([n_muts, total_length], dtype=bool),
+                   np.zeros([n_muts, total_length], dtype=bool),
+                   np.zeros([n_muts, total_length], dtype=bool)]
 
     masks = chromosome_object.seq_mask
 
