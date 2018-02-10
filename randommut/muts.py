@@ -198,8 +198,8 @@ class MutSet(object):
         total_muts = len(self)
         iterantions_n = total_muts // muts_x_batch
         iterantions_n = iterantions_n + 1
-
-        first_positions = np.multiply(list(range(1, iterantions_n)),
+        
+        first_positions = np.multiply(list(range(0, iterantions_n)),
                                       muts_x_batch)
         last_positions = np.multiply(list(range(1, iterantions_n + 1)),
                                      muts_x_batch)
@@ -207,11 +207,13 @@ class MutSet(object):
         # I think I do not have to touch this (substracting 1 ) because
         # I use the range functions that already does that.
         print("Number of iterations {}".format(iterantions_n))
+        
         for i, s_idx in enumerate(first_positions):
             # s_idx = first_positions[i]
             e_idx = last_positions[i]
-
-            strand_info = ["+" for i in range(muts_x_batch)]
+            #import pdb; pdb.set_trace()
+            length_to_range = e_idx - s_idx
+            strand_info = ["+" for i in range(length_to_range)]
 
             tmp = MutSet(chr_id=self.chr_id,
                          pos_start=self.pos[s_idx:e_idx, 0],

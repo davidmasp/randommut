@@ -12,20 +12,26 @@ def rand_single_chr_in_batch(chromosome_object,
                              times,
                              winlen,
                              verbose,
-                             batch_size = 10000):
+                             batch_size=10000):
     """
     Calls the rand_single_chr in batch mode
     """
-    out_all = []
-    for mutset_object in mutset_object_all.divide_batch(batch_size):
-        out_tmp = rand_single_chr(chromosome_object=chromosome_object,
-                                  mutset_object=mutset_object,
-                                  times=times,
-                                  winlen=winlen,
-                                  verbose=verbose)
-        out_all.append(out_tmp)
-
-    rand_out = np.concatenate(out_all, axis=0)
+    if len(mutset_object_all) <= batch_size:
+        rand_out = rand_single_chr(chromosome_object=chromosome_object,
+                                   mutset_object=mutset_object_all,
+                                   times=times,
+                                   winlen=winlen,
+                                   verbose=verbose)
+    else:
+        out_all = []
+        for mutset_object in mutset_object_all.divide_batch(batch_size):
+            out_tmp = rand_single_chr(chromosome_object=chromosome_object,
+                                      mutset_object=mutset_object,
+                                      times=times,
+                                      winlen=winlen,
+                                      verbose=verbose)
+            out_all.append(out_tmp)
+        rand_out = np.concatenate(out_all, axis=0)
 
     return rand_out
 
