@@ -120,6 +120,7 @@ def rand_single_chr(chromosome_object, mutset_object, times, winlen, verbose):
     pos = mutset_object.pos
     left_end = pos[:, 0] - winlen # start minus width
 
+    # this is the output, then the cols are max 100 (no memory issue here)
     rand_pos = np.empty((len(pos), times), dtype=int)
     rand_pos.fill(0) # safety first
 
@@ -267,8 +268,8 @@ def compute_bimask(masks, biset):
         # I am setting the whole mask to F
         # then I add a step in the rand process when if this happens
         # I generate -1 as randomized positions.
-        mask_res = np.empty(np.shape(masks[0]), dtype=bool)
-        mask_res.fill(0)
+        # update: see n. asjasdhajs
+        mask_res = np.zeros(np.shape(masks[0]), dtype=bool)
     else:
         sys.stderr.write(biset)
         raise ValueError
@@ -285,12 +286,21 @@ def generate_mask_matrix(mutset_object, chromosome_object, winlen):
     winlen = winlen + 1 # I think (due to the 0 based stuff)
     total_length = winlen + winlen + 1 # this because of the middle position
 
-    mask_matrix = [np.empty([len(mutset_object.pos), total_length], dtype=bool),
-                   np.empty([len(mutset_object.pos), total_length], dtype=bool),
-                   np.empty([len(mutset_object.pos), total_length], dtype=bool)]
-
-    #for i in mask_matrix:
-    #    i.fill(0) # this is very critical I checked should work
+    # here is the memory issue
+    # NOTE asjasdhajs
+    # trying to solve it with this
+    # np.ones((2, 2), dtype=bool)
+    # from here
+    # https://stackoverflow.com/a/21174962/5410410
+    # After some test in this approach we reduce the virtual memory generation
+    # in the initialitzation fase (reduction of half)
+    # Though the RES memory is the same and it behaves similar, with a
+    # reduction after a while. I guess this is numpy storing a number vs
+    # when it realises in only a boolean array. So it is an improvement I g.
+    # Not final solution though.
+    mask_matrix = [np.zeros([len(mutset_object.pos), total_length], dtype=bool),
+                   np.zeros([len(mutset_object.pos), total_length], dtype=bool),
+                   np.zeros([len(mutset_object.pos), total_length], dtype=bool)]
 
     masks = chromosome_object.seq_mask
 
@@ -304,14 +314,16 @@ def generate_mask_matrix(mutset_object, chromosome_object, winlen):
             if left_end < 0:
                 tqdm.write("SHORT position found \n")
                 false_pos = winlen - val[0]
-                mask_matrix[j][i, :false_pos] = False
+                # see update in asjasdhajs
+                #mask_matrix[j][i, :false_pos] = False
                 mask_matrix[j][i, false_pos:] = original_mask[:right_end]
             elif right_end > chromosome_length:
                 tqdm.write("LONG position found \n")
                 false_pos = int(right_end) - int(chromosome_length) #this is p
                 end_of_world = total_length - false_pos
                 mask_matrix[j][i, :end_of_world] = original_mask[left_end:chromosome_length]
-                mask_matrix[j][i, end_of_world:] = False
+                #mask_matrix[j][i, end_of_world:] = False
+                # see update in  asjasdhajs
             else:
                 mask_matrix[j][i,] = original_mask[left_end:right_end]
 
