@@ -337,13 +337,13 @@ def generate_mask_matrix(mutset_object, chromosome_object, winlen):
             right_end = val[1] + winlen # this is the end and then i add
 
             if left_end < 0:
-                tqdm.write("SHORT position found \n")
+                #tqdm.write("SHORT position found \n")
                 false_pos = winlen - val[0]
                 # see update in asjasdhajs
                 #mask_matrix[j][i, :false_pos] = False
                 mask_matrix[j][i, false_pos:] = original_mask[:right_end]
             elif right_end > chromosome_length:
-                tqdm.write("LONG position found \n")
+                #tqdm.write("LONG position found \n")
                 false_pos = int(right_end) - int(chromosome_length) #this is p
                 end_of_world = total_length - false_pos
                 mask_matrix[j][i, :end_of_world] = original_mask[left_end:chromosome_length]
