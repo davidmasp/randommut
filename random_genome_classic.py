@@ -65,11 +65,11 @@ def randomize(muts_path, genome_path, assembly, times, winlen, verbose):
         progress_chr.set_description('Randomizing {}'.format(chr_id))
         if chr_id in muts:
             mutset = muts[chr_id]
-            randomize_output[chr_id] = rnd.rand_single_chr(chrom,
-                                                           mutset,
-                                                           times,
-                                                           winlen,
-                                                           verbose = verbose)
+            randomize_output[chr_id] = rnd.rand_single_chr_in_batch(chrom,
+                                                                    mutset,
+                                                                    times,
+                                                                    winlen,
+                                                                    verbose=verbose)
         else:
             continue
     sys.stderr.write("Rand output generated\n")
@@ -169,7 +169,7 @@ if __name__ == "__main__":
                             assembly=args.assembly,
                             times=args.times,
                             winlen=args.winlen,
-                            verbose = args.verbose)
+                            verbose=args.verbose)
 
         write_randomized_positions(randomize_output=out_obj,
                                    outfilename=args.outfile,
