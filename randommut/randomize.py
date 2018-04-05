@@ -12,7 +12,7 @@ def rand_single_chr_in_batch(chromosome_object,
                              times,
                              winlen,
                              verbose,
-                             batch_size=10000):
+                             batch_size=1000):
     """
     Calls the rand_single_chr in batch mode
     """
@@ -321,7 +321,7 @@ def generate_mask_matrix(mutset_object, chromosome_object, winlen):
     # from here
     # https://stackoverflow.com/a/21174962/5410410
     # After some test in this approach we reduce the virtual memory generation
-    # in the initialitzation fase (reduction of half)
+    # in the initialitzation phase (reduction of half)
     # Though the RES memory is the same and it behaves similar, with a
     # reduction after a while. I guess this is numpy storing a number vs
     # when it realises in only a boolean array. So it is an improvement I g.
