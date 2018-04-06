@@ -32,7 +32,7 @@ def serialize_genome(genome_path, assembly):
     else:
         raise ValueError
 
-def randomize(muts_path, genome_path, assembly, times, winlen, verbose):
+def randomize(muts_path, genome_path, assembly, times, winlen, verbose, b_size):
     """
     perform  the randomization
     """
@@ -65,11 +65,13 @@ def randomize(muts_path, genome_path, assembly, times, winlen, verbose):
         progress_chr.set_description('Randomizing {}'.format(chr_id))
         if chr_id in muts:
             mutset = muts[chr_id]
-            randomize_output[chr_id] = rnd.rand_single_chr_in_batch(chrom,
-                                                                    mutset,
-                                                                    times,
-                                                                    winlen,
-                                                                    verbose=verbose)
+            randomize_output[chr_id] = rnd.rand_single_chr_in_batch(
+                chrom,
+                mutset,
+                times,
+                winlen,
+                batch_size=b_size,
+                verbose=verbose)
         else:
             continue
     sys.stderr.write("Rand output generated\n")
@@ -148,6 +150,8 @@ if __name__ == "__main__":
                         help="Number of randomized positions")
     parser.add_argument("-w", "--winlen", type=int, default=50000,
                         help="Length of the windows to randomize")
+    parser.add_argument("-b", "--batch_size", type=int, default=10000,
+                        help="Length of the randomization batch. Decrease if memory error.")
     parser.add_argument("-C", "--compression", type=str,
                         choices=['gzip', 'bz2', None],
                         default=None,
@@ -168,6 +172,7 @@ if __name__ == "__main__":
                             genome_path=args.genome,
                             assembly=args.assembly,
                             times=args.times,
+                            b_size=args.batch_size,
                             winlen=args.winlen,
                             verbose=args.verbose)
 
