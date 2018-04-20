@@ -1,5 +1,26 @@
 # RANDOM-MUT
 
+## Install
+
+How I do it.
+
+I am in a anaconda session. So my libraries are looking there. ( I think )
+However, this should work with any python 3 installation.
+
+1. clone the repository
+2. install using setup
+3. you should be able to run the module script and therefore run the randomization
+
+```bash
+git clone URL
+cd randommut
+python setup.py install
+cd ~ ## cd C:\Users\username\whatever
+python -m randommut -h
+```
+
+In this last chunk if the install was succesful you should see the help message.
+
 ## Steps
 
 The **first step** is to serialize your genome and store it as a python object.
