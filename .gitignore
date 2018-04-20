@@ -8,3 +8,7 @@ results/
 *.sh
 # editors
 .vscode
+
+# build info
+build/
+*.egg*
