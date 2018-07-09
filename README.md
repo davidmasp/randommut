@@ -79,3 +79,21 @@ Open conditional formating, custom rule
 ```
 
 Change `50000` with your winlen.
+
+## Input format requirement
+
+Should be a `.tsv` with the folloing columns:
+
+* chr
+* start
+* end
+* ref
+* alt
+* strand
+* sample
+
+```text
+chr1    10  10  G   A   1   SAMPLE1
+chr2    20  20  C   T   1   SAMPLE2
+...
+```
