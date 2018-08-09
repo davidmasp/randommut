@@ -105,15 +105,16 @@ def randomize(muts_path, genome_path, assembly, times, winlen, verbose, b_size):
         else:
             continue
 
-    #can hapen if only 1 chromosome
+    # import pdb; pdb.set_trace()
     if len(full_df) > 1:
         final_df = full_df[0].append(full_df[1:])
-    else:
+    elif len(full_df) == 1:
+        #can hapen if only 1 chromosome
         final_df = full_df[0]
-
-
+    else:
+        # this is the case described in issue #4
+        raise ValueError('chromosomes in mutation file not present in reference file, check assemblies')
     return final_df
-
 
 def write_randomized_positions(randomize_output, outfilename, compression):
     """
