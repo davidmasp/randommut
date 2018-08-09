@@ -30,8 +30,10 @@ It is convininent because you can serialize your refseq genome and then use the 
 
 ```bash
 GENOME="path/to/refseq.fa"
-python random_genome_classic.py -M serialize -g $GENOME -a hg19
+python -m randommut -M serialize -g $GENOME -a hg19
 ```
+
+It should output the serialized version of the genome in the current directory. Memory wise this processed got a peak of memory when writting the file at 30Gb.
 
 The **second step** is to generate the random positions.
 
