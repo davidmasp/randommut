@@ -8,4 +8,7 @@ setup(name='randommut',
       author_email='david.mas@irbbarcelona.org',
       license='MIT',
       packages=['randommut'],
+      install_requires=[
+          'biopython','tqdm','numpy',
+      ],
       zip_safe=False)
