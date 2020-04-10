@@ -9,6 +9,11 @@ setup(name='randommut',
       license='MIT',
       packages=['randommut'],
       install_requires=[
-          'biopython','tqdm','numpy',
+          'biopython','tqdm','numpy','pandas'
       ],
-      zip_safe=False)
+      zip_safe=False,
+      entry_points = {
+        'console_scripts': [
+            'randommut = randommut.__main__:main'
+        ]
+       })
