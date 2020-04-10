@@ -25,7 +25,7 @@ def mutset_from_path(av_input_path, to0base=True):
     # 5. strand
     # 6. sample
 
-    table = pd.DataFrame.from_csv(av_input_path,
+    table = pd.DataFrame.read_csv(av_input_path,
                                   header=None,
                                   sep="\t",
                                   index_col=False)
