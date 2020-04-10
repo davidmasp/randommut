@@ -1,5 +1,26 @@
 # RANDOM-MUT
 
+## Install
+
+How I do it.
+
+I am in a anaconda session. So my libraries are looking there. ( I think )
+However, this should work with any python 3 installation.
+
+1. clone the repository
+2. install using setup
+3. you should be able to run the module script and therefore run the randomization
+
+```bash
+git clone URL
+cd randommut
+python setup.py install
+cd ~ ## cd C:\Users\username\whatever
+python -m randommut -h
+```
+
+In this last chunk if the install was succesful you should see the help message.
+
 ## Steps
 
 The **first step** is to serialize your genome and store it as a python object.
@@ -9,8 +30,10 @@ It is convininent because you can serialize your refseq genome and then use the 
 
 ```bash
 GENOME="path/to/refseq.fa"
-python random_genome_classic.py -M serialize -g $GENOME -a hg19
+python -m randommut -M serialize -g $GENOME -a hg19
 ```
+
+It should output the serialized version of the genome in the current directory. Memory wise this processed got a peak of memory when writting the file at 30Gb.
 
 The **second step** is to generate the random positions.
 
@@ -56,3 +79,21 @@ Open conditional formating, custom rule
 ```
 
 Change `50000` with your winlen.
+
+## Input format requirement
+
+Should be a `.tsv` with the folloing columns:
+
+* chr
+* start
+* end
+* ref
+* alt
+* strand
+* sample
+
+```text
+chr1    10  10  G   A   1   SAMPLE1
+chr2    20  20  C   T   1   SAMPLE2
+...
+```

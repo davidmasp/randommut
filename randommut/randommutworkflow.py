@@ -32,7 +32,7 @@ def serialize_genome(genome_path, assembly):
     else:
         raise ValueError
 
-def randomize(muts_path, genome_path, assembly, times, winlen, verbose):
+def randomize(muts_path, genome_path, assembly, times, winlen, verbose, b_size):
     """
     perform  the randomization
     """
@@ -65,11 +65,13 @@ def randomize(muts_path, genome_path, assembly, times, winlen, verbose):
         progress_chr.set_description('Randomizing {}'.format(chr_id))
         if chr_id in muts:
             mutset = muts[chr_id]
-            randomize_output[chr_id] = rnd.rand_single_chr_in_batch(chrom,
-                                                                    mutset,
-                                                                    times,
-                                                                    winlen,
-                                                                    verbose=verbose)
+            randomize_output[chr_id] = rnd.rand_single_chr_in_batch(
+                chrom,
+                mutset,
+                times,
+                winlen,
+                batch_size=b_size,
+                verbose=verbose)
         else:
             continue
     sys.stderr.write("Rand output generated\n")
@@ -103,15 +105,16 @@ def randomize(muts_path, genome_path, assembly, times, winlen, verbose):
         else:
             continue
 
-    #can hapen if only 1 chromosome
+    # import pdb; pdb.set_trace()
     if len(full_df) > 1:
         final_df = full_df[0].append(full_df[1:])
-    else:
+    elif len(full_df) == 1:
+        #can hapen if only 1 chromosome
         final_df = full_df[0]
-
-
+    else:
+        # this is the case described in issue #4
+        raise ValueError('chromosomes in mutation file not present in reference file, check assemblies')
     return final_df
-
 
 def write_randomized_positions(randomize_output, outfilename, compression):
     """
@@ -124,55 +127,3 @@ def write_randomized_positions(randomize_output, outfilename, compression):
                             index=False,
                             compression=compression)
     sys.stderr.write("Results file available at {}\n".format(outfilename))
-
-if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument("-M", "--mode", type=str,
-                        choices=['serialize', 'randomize'],
-                        help="The mode to run the software")
-    parser.add_argument("-g", "--genome",
-                        type=str,
-                        help="The path to the reference sequence or serialized genome")
-    parser.add_argument("-m", "--muts",
-                        type=str,
-                        help="The path to the muts file in avinput format",
-                        default=None)
-    parser.add_argument("-a", "--assembly",
-                        type=str,
-                        help="Assembly of the genome",
-                        default="hg19")
-    parser.add_argument("-o", "--outfile", default="rand_positions.tsv")
-    parser.add_argument("-t", "--times", type=int, default=10,
-                        help="Number of randomized positions")
-    parser.add_argument("-w", "--winlen", type=int, default=50000,
-                        help="Length of the windows to randomize")
-    parser.add_argument("-C", "--compression", type=str,
-                        choices=['gzip', 'bz2', None],
-                        default=None,
-                        help="If the output should be compressed")
-    parser.add_argument("-v", "--verbose",
-                        action="store_true",
-                        default=False,
-                        help="Script returns a more verbose messages.")
-
-    args = parser.parse_args()
-
-    if args.mode == "serialize":
-        serialize_genome(genome_path=args.genome, assembly=args.assembly)
-    elif args.mode == "randomize":
-        if args.muts is None:
-            sys.exit('Mut file needed. add with -m tag')
-        out_obj = randomize(muts_path=args.muts,
-                            genome_path=args.genome,
-                            assembly=args.assembly,
-                            times=args.times,
-                            winlen=args.winlen,
-                            verbose=args.verbose)
-
-        write_randomized_positions(randomize_output=out_obj,
-                                   outfilename=args.outfile,
-                                   compression=args.compression)
-    else:
-        sys.exit("Wrong mode inputed")

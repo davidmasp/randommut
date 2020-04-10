@@ -6,6 +6,7 @@ import sys
 import numpy as np
 from tqdm import tqdm
 from Bio.Seq import Seq
+#from memory_profiler import profile
 
 def rand_single_chr_in_batch(chromosome_object,
                              mutset_object_all,
@@ -307,6 +308,7 @@ def compute_bimask(masks, biset):
 
     return mask_final
 
+#@profile
 def generate_mask_matrix(mutset_object, chromosome_object, winlen):
     """
     It generates mask matrix
