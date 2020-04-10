@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='randommut',
-      version='0.1.1',
+      version='0.1.2',
       description='A package to randomze somatic mutaitons in the genome',
       url='http://vm-ubuntu-dmp:3000/davidmasp/randommut',
       author='David Mas',
